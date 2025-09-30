@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Cinemachine;
 
 public class PlayerController : MonoBehaviour
@@ -21,10 +22,20 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private bool isGrounded;
 
+
+
+    public int maxHP = 100;
+    private int currentHP;
+
+    public Slider hpSlider;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
         pov = virtualCam.GetCinemachineComponent<CinemachinePOV>();
+
+        currentHP = maxHP;
+        hpSlider.value = 1f;
 
         //대쉬 UI는 시작시 비활성화
         if (shiftUI != null)
@@ -35,6 +46,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            pov.m_HorizontalAxis.Value = transform.eulerAngles.y;
+            pov.m_VerticalAxis.Value = 0f;
+        }
         //Freelook모드 true일시 모든 움직임 코드를 무시
         if (cinemachineSwitcher != null)
         {
@@ -69,7 +86,7 @@ public class PlayerController : MonoBehaviour
         Quaternion targetRot = Quaternion.Euler(0f, cameraYaw, 0f);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
 
-       
+
         if (isGrounded && Input.GetKeyDown(KeyCode.Space))
         {
             velocity.y = jumpPower;
@@ -99,6 +116,21 @@ public class PlayerController : MonoBehaviour
                 shiftUI.SetActive(false);
             }
         }
-     
     }
+
+    public void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+        hpSlider.value = (float)currentHP / maxHP;
+
+        if (currentHP <= 0)
+        {
+            Die();
+        }
+    }
+    void Die()
+    {
+        Destroy(gameObject);
+    }
+  
 }
